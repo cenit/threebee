@@ -188,7 +188,7 @@
  use utilities_threebodies
  implicit none
 
- integer, parameter ::  N_step = 1 ! numero passi per periodo
+ integer, parameter ::  N_step = 100 ! numero passi per periodo
  integer, parameter ::  N_periods = 1 ! numero periodi
  integer, parameter ::  N_points = 100 ! numero punti
  integer, parameter ::  N_dim = 6 ! numero dimensioni
@@ -212,9 +212,9 @@
  real (kind=8), dimension(:), allocatable :: Av_mu_eps_f
 
  real (kind=8) :: T_per
- real (kind=8) :: H_c, Jac_c, Jac
+ real (kind=8) :: Jac
  real (kind=8) :: xc, yc, x_Sole, y_Sole, x_Giove, y_Giove
- real (kind=8) :: x0, y0, vx0, vy0, vvy0, t
+ real (kind=8) :: xcor0, ycor0, vxcor0, vycor0,t
  real (kind=8) :: tau0, ptau0
  real (kind=8) :: xf0, yf0, pxf0, pyf0
  real (kind=8) :: xf, yf, pxf, pyf
@@ -258,21 +258,12 @@
  Av_f = 0.d0
  Av_mu_f = 0.d0
  Av_mu_eps_f = 0.d0
- H_c = 0.d0
- Jac_c = 0.d0
  Jac = 0.d0
- xc = 0.d0
- yc = 0.d0
- x_Sole = 0.d0
- y_Sole = 0.d0
- x_Giove = 0.d0
- y_Giove = 0.d0
  T_per = 0.d0
- x0 = 0.d0
- y0 = 0.d0
- vx0 = 0.d0
- vy0 = 0.d0
- vvy0 = 0.d0
+ xcor0 = 0.d0
+ ycor0 = 0.d0
+ vxcor0 = 0.d0
+ vycor0 = 0.d0
  t = 0.d0
  tau0 = 0.d0
  ptau0 = 0.d0
@@ -304,38 +295,19 @@
  open(50,file='Initial_data.dat')
 
 
- T_per = 2.d0 * pi / ome
-
-
- ! punto equilibio di Lagrange satellite
- xc = 0.5d0 - eps
- yc = sqrt(3.d0) / 2.d0
-
- x_Sole = -eps
- y_Sole = 0.d0
- x_Giove = 1.d0 - eps
- y_Giove = 0.d0
-
-
- !-----------------------------------------
- ! Costante Jacobi Jac = - 2 H
- ! H_c hamiltoniana sist. corot.
- ! Jac valore scelto costante Jacobi
- !-------------------------------------------
- H_c = -1.d0 - 0.5d0 * (xc**2 + yc**2)
- Jac_c = -2.d0 * H_c
+ T_per = (2.d0 * pi) / ome
  Jac = 3.07d0
 
  !-----------------------------------------------
  ! Condizioni iniziali sistema corotante
  !-----------------------------------------------
  if(chaos .eqv. .true.) then
-  x0 = 0.56d0
+  xcor0 = 0.56d0
  else
-  x0 = 0.55d0
+  xcor0 = 0.55d0
  endif
- y0 = 0.d0
- vx0 = 0.d0
+ ycor0 = 0.d0
+ vxcor0 = 0.d0
  t = 0.d0
 
  !------------------------------------------
@@ -346,16 +318,19 @@
 
 
  !------------ fine parametri, inizio verifiche e algoritmo
- vvy0 = x0**2 + 2.d0 * (1.d0 - mu) / abs(x0 + mu) + 2.d0 * mu / abs(x0 - 1.d0 + mu) - Jac - vx0**2
- if(vvy0.lt.0) then
-  write(*,*) '**** vy0**2 < 0: cambiare cond. iniz. ', vvy0
-  stop
- endif
- vy0 = sqrt(vvy0)
- write(*,*)'*** vy0 mu ***', vy0, mu, x0, vvy0, Jac
+ vycor0 = xcor0**2+y0**2.d0+2.d0*(1.d0-mu)/abs(xcor0+mu)+2.d0*mu/abs(xcor0-1.d0+mu)-Jac-vxcor0**2 !!!!!!!!!!! manca y0**2.d0
+ vycor0 = sqrt(vycor0)
+ 
+ write(*,*)'vy0 mu :', vycor0, mu
+ print*, "x0    ","    vycor0","     JAC"
+ print*, xcor0, vycor0, Jac
 
- call Cor_fix(x0,y0,vx0,vy0,xf0,yf0,pxf0,pyf0,t,ome)
- write(*,*)x0,y0,vx0,vy0,tau0,ptau0,xf0,yf0,pxf0,pyf0,t,ome
+ call Cor_fix(xcor0,ycor0,vxcor0,vycor0,xf0,yf0,pxf0,pyf0,t,ome)
+ print*, "x0    ","    y0","     vx0","     vy0"
+ print*, xcor0,ycor0,vxcor0,vycor0
+ print*, tau0,ptau0
+ print*, xf0,yf0,pxf0,pyf0
+ print*, t,ome
 
  stocastic_noise = 1.d0 - 2.d0 * stocas(seme)
 
