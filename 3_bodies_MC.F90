@@ -188,9 +188,9 @@
  use utilities_threebodies
  implicit none
 
- integer, parameter ::  N_step = 100 ! numero passi per periodo
- integer, parameter ::  N_periods = 1 ! numero periodi
- integer, parameter ::  N_points = 100 ! numero punti
+ integer, parameter ::  N_step = 1000 ! numero passi per periodo
+ integer, parameter ::  N_periods = 2 ! numero periodi
+ integer, parameter ::  N_points = 1000 ! numero punti
  integer, parameter ::  N_dim = 6 ! numero dimensioni
 
  logical, parameter :: chaos = .false.

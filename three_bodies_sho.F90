@@ -168,6 +168,7 @@
  pxf = pxf0
  pyf = pyf0
  ptau = ptau0
+ WRITE(7,*) xcor0,vxcor0,ycor0,vycor0
 
  A_step = Dfloat(N_step)
  dt = T_per/A_step
@@ -194,6 +195,9 @@
   E = H(xf,yf,tau,pxf,pyf,ptau,ome,eps)
   call Fix_cor(xf,yf,pxf,pyf, x,y,vx,vy,px,py, xp,yp,pxp,pyp,t,ome,eps)
   errh = abs(E-E0)
+  WRITE(7,*) x,vx,y,vy
+  WRITE(12,*) t, errh
+  write(13,*) xf,yf,pxf,pyf
  enddo
 
 
