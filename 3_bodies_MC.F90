@@ -318,7 +318,7 @@
 
 
  !------------ fine parametri, inizio verifiche e algoritmo
- vycor0 = xcor0**2+y0**2.d0+2.d0*(1.d0-mu)/abs(xcor0+mu)+2.d0*mu/abs(xcor0-1.d0+mu)-Jac-vxcor0**2 !!!!!!!!!!! manca y0**2.d0
+ vycor0 = xcor0**2+ycor0**2.d0+2.d0*(1.d0-mu)/abs(xcor0+mu)+2.d0*mu/abs(xcor0-1.d0+mu)-Jac-vxcor0**2 !!!!!!!!!!! manca y0**2.d0
  vycor0 = sqrt(vycor0)
  
  write(*,*)'vy0 mu :', vycor0, mu
