@@ -1,6 +1,36 @@
  !#define USA_OPENMP
 
+ module parameters
+ implicit none
+
+ integer, parameter ::  N_step = 1000 ! numero passi per periodo
+ integer, parameter ::  N_periods = 10 ! numero periodi
+ integer, parameter ::  N_points = 1000 ! numero punti
+ integer, parameter ::  N_dim = 6 ! numero dimensioni
+
+ logical, parameter :: chaos = .false.  !  x0 = 0.55 stabile, x0 = 0.56 caotica
+
+ real (kind=8), parameter :: ome = 1.d0
+ real (kind=8), parameter :: mu = 9.54d-4 ! mu = m_G/m_S
+ real (kind=8), parameter :: eps = 1.d0 ! eps ampiezza rumore
+ real (kind=8), parameter :: seme = 7255347848.d0 ! Parametri Monte-carlo
+
+ end module parameters
+
+ 
+ 
+ 
+ 
+ 
+ 
+ module constants
+ implicit none
+ real (kind=8), parameter :: pi = 3.141592653589793
+ end module constants
+
+
  module utilities_threebodies
+ use constants
  implicit none
  contains
 
@@ -10,8 +40,10 @@
  real (kind=8), parameter :: a = 16807.d0
  real (kind=8), parameter :: b = 2147483647.d0
  real (kind=8) :: p
- p=DMOD(a*IX,b)
+
+ p = mod(a*IX,b)
  stocas=p/b
+
  return
  end function stocas
 
@@ -37,9 +69,8 @@
  real (kind=8) function f_cor(x)
  Implicit none
  real (kind=8), intent(in) :: x
- real (kind=8) duepi
- duepi=8.d0*datan(1.d0)
- f_cor=cos(duepi*x)
+
+ f_cor=cos(2.d0*pi*x)
  return
  end function f_cor
 
@@ -52,7 +83,7 @@
  real (kind=8), intent(in) :: noise, ome, eps
  integer :: k_max, k
  real (kind=8) :: xf, pxf, yf, pyf, tau, ptau
- real (kind=8) :: duepi, T_per, A_step, dt
+ real (kind=8) :: T_per, A_step, dt
 
  xf = X(1)
  pxf= X(2)
@@ -61,10 +92,9 @@
  tau = X(5)
  ptau = X(6)
 
- duepi=8.d0*datan(1.d0)
- T_per=duepi/ome
+ T_per=2.d0*pi/ome
 
- A_step=Dfloat(N_s)
+ A_step=dble(N_s)
  dt=T_per/A_step
  k_max=N_s
 
@@ -186,20 +216,10 @@
  use omp_lib
 #endif
  use utilities_threebodies
+ use constants
+ use parameters
  implicit none
 
- integer, parameter ::  N_step = 1000 ! numero passi per periodo
- integer, parameter ::  N_periods = 2 ! numero periodi
- integer, parameter ::  N_points = 1000 ! numero punti
- integer, parameter ::  N_dim = 6 ! numero dimensioni
-
- logical, parameter :: chaos = .false.
-
- real (kind=8), parameter :: pi = 3.141592653589793
- real (kind=8), parameter :: ome = 1.d0
- real (kind=8), parameter :: mu = 9.54d-4 ! mu = m_G/m_S
- real (kind=8), parameter :: eps = 1.d-2 ! eps ampiezza rumore
- real (kind=8), parameter :: seme = 7255347848.d0 ! Parametri Monte-carlo
 
  integer :: AllocateStatus, DeAllocateStatus
  real (kind=8), dimension(:, :, :), allocatable :: x, x_eps
@@ -320,21 +340,21 @@
  !------------ fine parametri, inizio verifiche e algoritmo
  vycor0 = xcor0**2+ycor0**2.d0+2.d0*(1.d0-mu)/abs(xcor0+mu)+2.d0*mu/abs(xcor0-1.d0+mu)-Jac-vxcor0**2 !!!!!!!!!!! manca y0**2.d0
  vycor0 = sqrt(vycor0)
- 
- write(*,*)'vy0 mu :', vycor0, mu
- print*, "x0    ","    vycor0","     JAC"
- print*, xcor0, vycor0, Jac
+
+ write(*,*) 'vy0 mu :', vycor0, mu
+ write(*,*) " x0   ,  vycor0  ,  JAC "
+ write(*,*)  xcor0 ,  vycor0  ,  Jac
 
  call Cor_fix(xcor0,ycor0,vxcor0,vycor0,xf0,yf0,pxf0,pyf0,t,ome)
- print*, "x0    ","    y0","     vx0","     vy0"
- print*, xcor0,ycor0,vxcor0,vycor0
- print*, tau0,ptau0
- print*, xf0,yf0,pxf0,pyf0
- print*, t,ome
+
+ write(*,*) "  x0  ,  y0   ,  vx0   ,  vy0 "
+ write(*,*)  xcor0 , ycor0 , vxcor0 , vycor0
+ write(*,*) " tau0 , ptau0 "
+ write(*,*)   tau0 , ptau0
+ write(*,*)   xf0  , yf0   ,  pxf0  ,  pyf0
+ write(*,*)    t   , ome
 
  stocastic_noise = 1.d0 - 2.d0 * stocas(seme)
-
-
 
  Cor_eps = 0.d0
  Fid_eps = 0.d0
