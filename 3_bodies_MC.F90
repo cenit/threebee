@@ -13,20 +13,25 @@
  real (kind=8), parameter :: ome = 1.d0
  real (kind=8), parameter :: mu = 9.54d-4 ! mu = m_G/m_S
  real (kind=8), parameter :: eps = 1.d0 ! eps ampiezza rumore
- real (kind=8), parameter :: seme = 7255347848.d0 ! Parametri Monte-carlo
+ !real (kind=8), parameter :: seme = 7255347848.d0 ! Parametri Monte-carlo
+ real (kind=8), parameter :: stocas_fisso=0.031364026959689346589003385d0
 
  end module parameters
 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
  module constants
  implicit none
  real (kind=8), parameter :: pi = 3.141592653589793
  end module constants
+
+
+
+
 
 
  module utilities_threebodies
@@ -35,36 +40,32 @@
  contains
 
 
- real (kind=8) function stocas(IX)
- real (kind=8), intent(in) :: IX
- real (kind=8), parameter :: a = 16807.d0
- real (kind=8), parameter :: b = 2147483647.d0
- real (kind=8) :: p
 
- p = mod(a*IX,b)
- stocas=p/b
+
+ pure real*8 function stocas()
+ use parameters
+ !real (kind=8), intent(in) :: IX
+ !real (kind=8), parameter :: a = 16807.d0
+ !real (kind=8), parameter :: b = 2147483647.d0
+ !real (kind=8) :: p
+
+ !p = mod(a*IX,b)
+ !stocas=p/b
+
+ !p = mod(a*seme,b)
+ !stocas=p/b
+
+ !stocas=67353735.d0/2147483647.d0
+
+ stocas=stocas_fisso
 
  return
  end function stocas
 
 
 
- real (kind=8) function fmod(x)
- Implicit none
- real (kind=8), intent(inout) :: x
- real (kind=8) :: ix
 
- if(x.ge.0.d0) then
-  ix=x
-  x=x-ix
- else
-  ix=x
-  x=x-ix
-  x=x+1.d0
- endif
- fmod=x
- return
- end function fmod
+
 
  real (kind=8) function f_cor(x)
  Implicit none
@@ -75,30 +76,33 @@
  end function f_cor
 
 
- subroutine user_map (X, N_s, noise, ome, eps)
+
+
+
+
+ subroutine user_map (X,N_s,noise,ome,eps)
  Implicit none
  integer, parameter ::  N_dim=6 ! numero dimensioni
  real (kind=8), dimension(1:N_dim), intent(inout) :: X
  integer, intent(in) :: N_s
- real (kind=8), intent(in) :: noise, ome, eps
- integer :: k_max, k
- real (kind=8) :: xf, pxf, yf, pyf, tau, ptau
- real (kind=8) :: T_per, A_step, dt
+ real (kind=8), intent(in) :: noise,ome,eps
+ integer :: k
+ real (kind=8) :: xf,pxf,yf,pyf,tau,ptau
+ real (kind=8) :: T_per,A_step,dt
 
  xf = X(1)
- pxf= X(2)
+ pxf = X(2)
  yf = X(3)
  pyf = X(4)
  tau = X(5)
  ptau = X(6)
 
- T_per=2.d0*pi/ome
+ T_per = 2.d0*pi/ome
 
- A_step=dble(N_s)
- dt=T_per/A_step
- k_max=N_s
+ A_step = dble(N_s)
+ dt = T_per/A_step
 
- do k=1,k_max
+ do k=1,N_s
   call sym4(xf,yf,tau,pxf,pyf,ptau,dt,ome,eps)
  enddo
 
@@ -112,10 +116,14 @@
  end subroutine user_map
 
 
+
+
+
+
  subroutine Cor_fix(x,y,vx,vy,xf,yf,pxf,pyf,t,ome)
  Implicit none
  real (kind=8) :: c, s
- real (kind=8), intent(in) :: x,y,vx,vy,ome,t
+ real (kind=8), intent(in) :: x,y,vx,vy,t,ome
  real (kind=8), intent(out) :: xf,yf,pxf,pyf
 
  c = COS(ome*t)
@@ -129,10 +137,13 @@
 
 
 
+
+
+
  subroutine Fix_cor(xf,yf,pxf,pyf,x,y,vx,vy,t,ome)
  Implicit none
  real (kind=8) :: c, s
- real (kind=8), intent(in) :: xf,yf,pxf,pyf,ome,t
+ real (kind=8), intent(in) :: xf,yf,pxf,pyf,t,ome
  real (kind=8), intent(out) :: x,y,vx,vy
 
  c = COS(ome*t)
@@ -146,11 +157,14 @@
 
 
 
+
+
+
  subroutine sym2(x,y,tau,px,py,ptau,dt,ome,eps)
  Implicit none
  real (kind=8), intent(inout) :: x,y,tau,px,py,ptau
  real (kind=8), intent(in) :: dt,ome,eps
- real (kind=8) :: xnew, ynew, taunew, pxnew, pynew, ptaunew, fx, fy, ftau, fxnew, fynew, ftaunew
+ real (kind=8) :: xnew,ynew,taunew,pxnew,pynew,ptaunew,fx,fy,ftau,fxnew,fynew,ftaunew
 
  call f(x,y,tau,fx,fy,ftau,ome,eps)
  xnew = x + px*dt + fx*dt**2/2.d0
@@ -173,7 +187,7 @@
  subroutine f(x,y,tau,fx,fy,ftau,ome,eps)
  real (kind=8) :: c, s
  real (kind=8) :: r1,r2
- real (kind=8), intent(in) :: ome,eps,x,y,tau
+ real (kind=8), intent(in) :: x,y,tau,ome,eps
  real (kind=8), intent(out) :: fx,fy,ftau
 
  c = cos(ome*tau)
@@ -190,10 +204,13 @@
  end subroutine sym2
 
 
+
+
+
  subroutine sym4(x,y,tau,px,py,ptau,dt,ome,eps)
  Implicit none
  real (kind=8), intent(inout) :: x,y,tau,px,py,ptau
- real (kind=8), intent(in) :: ome,eps,dt
+ real (kind=8), intent(in) :: dt,ome,eps
  real (kind=8) :: sq2, alpha, beta, dt1, dt2
  sq2 = 2.d0**(1.d0/3.d0)
  alpha = 1.d0/(2.d0-sq2)
@@ -205,7 +222,13 @@
  call sym2(x,y,tau,px,py,ptau,dt1,ome,eps)
  end subroutine sym4
 
+
+
+
+
  end module utilities_threebodies
+
+
 
 
 
@@ -234,7 +257,7 @@
  real (kind=8) :: T_per
  real (kind=8) :: Jac
  real (kind=8) :: xc, yc, x_Sole, y_Sole, x_Giove, y_Giove
- real (kind=8) :: xcor0, ycor0, vxcor0, vycor0,t
+ real (kind=8) :: xcor0, ycor0, vxcor0, vycor0, t
  real (kind=8) :: tau0, ptau0
  real (kind=8) :: xf0, yf0, pxf0, pyf0
  real (kind=8) :: xf, yf, pxf, pyf
@@ -338,7 +361,7 @@
 
 
  !------------ fine parametri, inizio verifiche e algoritmo
- vycor0 = xcor0**2+ycor0**2.d0+2.d0*(1.d0-mu)/abs(xcor0+mu)+2.d0*mu/abs(xcor0-1.d0+mu)-Jac-vxcor0**2 !!!!!!!!!!! manca y0**2.d0
+ vycor0 = xcor0**2 + ycor0**2 + 2.d0*(1.d0-mu)/abs(xcor0+mu) + 2.d0*mu/abs(xcor0-1.d0+mu) - Jac - vxcor0**2
  vycor0 = sqrt(vycor0)
 
  write(*,*) 'vy0 mu :', vycor0, mu
@@ -351,10 +374,15 @@
  write(*,*)  xcor0 , ycor0 , vxcor0 , vycor0
  write(*,*) " tau0 , ptau0 "
  write(*,*)   tau0 , ptau0
+ write(*,*) " xf0  , yf0   ,  pxf0  ,  pyf0 "
  write(*,*)   xf0  , yf0   ,  pxf0  ,  pyf0
+ write(*,*) "  t   , ome "
  write(*,*)    t   , ome
 
- stocastic_noise = 1.d0 - 2.d0 * stocas(seme)
+ stocastic_noise = 1.d0 - 2.d0 * stocas()
+ write(*,*) " stocastic noise "
+ write(*,*)   stocastic_noise
+
 
  Cor_eps = 0.d0
  Fid_eps = 0.d0
@@ -435,6 +463,9 @@
   write(9,'(I5,10g13.5)') j, xx_i(1,j), xx_i(3,j), xx_i(2,j), xx_i(4,j)
  enddo
 
+
+
+
 #if defined (USA_OPENMP)
  !$OMP PARALLEL DEFAULT(FIRSTPRIVATE) SHARED(x,x_eps,xx_noise,xx_no_noise)
  rank = omp_get_thread_num()
@@ -482,14 +513,23 @@
    x_eps(6,n+1,j) = X_3corpi(6)
 
   enddo
+ enddo
+#if defined (USA_OPENMP)
+ !$OMP ENDDO
+ !$OMP END PARALLEL
+#endif
 
 
+
+
+
+ do j=1,N_points ! Loop sui punti, secondario
 
   xf  = x(1,N_periods+1,j)
   pxf = x(2,N_periods+1,j)
   yf  = x(3,N_periods+1,j)
   pyf = x(4,N_periods+1,j)
-  t   = (N_periods+1)*T_per
+  t   = (N_periods)*T_per
 
   call Fix_cor(xf,yf,pxf,pyf,xx,yy,vvx,vvy,t,ome)
 
@@ -498,13 +538,11 @@
   xx_no_noise(3,j) = yy
   xx_no_noise(4,j) = vvy
 
-
-
   xf  = x_eps(1,N_periods+1,j)
   pxf = x_eps(2,N_periods+1,j)
   yf  = x_eps(3,N_periods+1,j)
   pyf = x_eps(4,N_periods+1,j)
-  t   = (N_periods+1)*T_per
+  t   = (N_periods)*T_per
 
   call Fix_cor(xf,yf,pxf,pyf,xx,yy,vvx,vvy,t,ome)
 
@@ -514,25 +552,20 @@
   xx_noise(4,j) = vvy
 
 
- enddo   ! chiude ciclo n=1,N_periods
-#if defined (USA_OPENMP)
- !$OMP ENDDO
- !$OMP END PARALLEL
-#endif
-
-
-
- do j=1,N_points
   write(19,'(I5,10g13.5 )') j, xx_no_noise(1,j), xx_no_noise(3,j), xx_no_noise(2,j), xx_no_noise(4,j)
   write(20,'(I5,10g13.5 )') j, xx_noise(1,j), xx_noise(3,j), xx_noise(2,j), xx_noise(4,j)
  enddo
 
+
+
+
  do n=1,N_periods+1 ! Iterazione nel tempo: loop principale (N_periods e' il massimo num di iterazioni temporali)
+
   do j=1,N_points
-   Cor_eps(n) = Cor_eps(n) + f_cor(x_eps(1,n,j)) * f_cor(x_eps(1,1,j))
+   Cor_eps(n) = Cor_eps(n) + f_cor(x_eps(1,n,j)) * f_cor(x_eps(1,1,j))  ! attenzione: f_cor e' di x_eps(1,1,j) e non x_eps(1,n,j)!
    Fid_eps(n) = Fid_eps(n) + f_cor(x_eps(1,n,j)) * f_cor(x(1,n,j))
 
-   Av_f(n) = Av_f(n) + f_cor(x(1,1,j))
+   Av_f(n) = Av_f(n) + f_cor(x(1,1,j))  ! attenzione: f_cor e' di x(1,1,j) e non x(1,n,j)!
    Av_mu_f(n) = Av_mu_f(n) + f_cor(x(1,n,j))
    Av_mu_eps_f(n) = Av_mu_eps_f(n) + f_cor(x_eps(1,n,j))
   enddo
@@ -546,7 +579,6 @@
 
   Cor_eps(n) = Cor_eps(n) - Av_f(n) * Av_mu_eps_f(n)
   Fid_eps(n) = Fid_eps(n) - Av_mu_f(n) * Av_mu_eps_f(n)
-
 
  enddo   ! chiude ciclo n=1,N_periods
 
