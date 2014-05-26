@@ -205,9 +205,13 @@ c-----
 
                t=j*T_per
                call Fix_cor(xf,yf,pxf,pyf, xx,yy,vvx,vvy,t)
-
-               write(50,'(I3,10g13.5 )') j, x_0(j), y_0(j),px_0(j), py_0(j),
-     *              tau_0(j)/duepi, ptau_0(j)
+               a1=x_0(j)
+               a2=y_0(j)
+               a3=px_0(j)
+               a4=py_0(j)
+               a5=tau_0(j)/duepi
+               a6=ptau_0(j)
+               write(50,'(I3,10g13.5 )') j,a1,a2,a3,a4,a5,a6
                write(9,'(I3,10g13.5 )') j,  xx,yy,vvx,vvy
 
             enddo               !   <---
