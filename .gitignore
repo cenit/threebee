@@ -3,7 +3,7 @@
 
 # Fortran Module Files
 *.mod
-
+*.u2d
 
 # User-specific files
 *.suo
