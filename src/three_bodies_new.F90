@@ -1,4 +1,3 @@
- !#define USA_OPENMP
 
  module parameters
  implicit none
@@ -235,7 +234,7 @@
 
 
  program threebodies
-#if defined(USA_OPENMP)
+#if defined(_OPENMP)
  use omp_lib
 #endif
  use utilities_threebodies
@@ -266,7 +265,7 @@
 
  Integer :: n, np, j
 
-#if defined(USA_OPENMP)
+#if defined(_OPENMP)
  Integer :: rank, nthreads
 #endif 
 
@@ -466,7 +465,7 @@
 
 
 
-#if defined (USA_OPENMP)
+#if defined (_OPENMP)
  !$OMP PARALLEL DEFAULT(FIRSTPRIVATE) SHARED(x,x_eps,xx_noise,xx_no_noise)
  rank = omp_get_thread_num()
  nthreads = omp_get_num_threads()
@@ -514,7 +513,7 @@
 
   enddo
  enddo
-#if defined (USA_OPENMP)
+#if defined (_OPENMP)
  !$OMP ENDDO
  !$OMP END PARALLEL
 #endif
