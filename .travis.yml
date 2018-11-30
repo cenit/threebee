@@ -15,7 +15,6 @@ addons:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx"   ]]; then brew update                                                                               ;fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx"   ]]; then brew cask uninstall oclint                                                                ;fi
   - if [[ "$TRAVIS_OS_NAME" == "osx"   ]]; then brew install gcc                                                                          ;fi
   - if [[ "$TRAVIS_OS_NAME" == "osx"   ]]; then export FC=/usr/local/bin/gfortran-8                                                       ;fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export FC=/usr/bin/gfortran                                                               ;fi
